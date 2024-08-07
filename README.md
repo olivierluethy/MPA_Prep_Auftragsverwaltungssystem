@@ -58,11 +58,10 @@ The project is actually very simple. In there you can see all employees and task
 <!-- Problems during project -->
 ## Problems during project
 
-1. How to check if current date time has passed a set date time in PHP?
-https://write.corbpie.com/php-check-if-current-date-time-has-passed-a-set-date-time/ (In the end this solution has been removed from the project, instead I have stanged something in the SQL Select statement.
+1. [How to check if current date time has passed a set date time in PHP](https://write.corbpie.com/php-check-if-current-date-time-has-passed-a-set-date-time/)<br>
+In the end, this solution was removed from the project, and instead I tweaked something in the SQL select statement.
 
-2. How to document methods and functions inside of a php code?
-https://de.wikipedia.org/wiki/PHPDoc
+2. [How to document methods and functions inside of a php code](https://de.wikipedia.org/wiki/PHPDoc)
 
-3. Find if date is older than 30 days (This has been used instead of solution 1 btw)
-https://stackoverflow.com/questions/7130738/find-if-date-is-older-than-30-days/7130744
+3. [Find if date is older than 30 days](https://stackoverflow.com/questions/7130738/find-if-date-is-older-than-30-days/7130744)<br>
+This was used instead of solution 1.
