@@ -4,7 +4,7 @@ session_start();
  
 // Check if the user is logged in, if not then redirect him to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-    header("location: ../hallo/login");
+    header("location: ../login");
     exit;
 }
 
@@ -21,11 +21,7 @@ foreach ($mitarbeiter as $mitarbeiters){
     <meta charset="UTF-8">
     <title>Mitarbeiter</title>
     <link rel="stylesheet" href="../public/css/app.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300&display=swap" rel="stylesheet">
 
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
     <link rel="shortcut icon" href="../images/verwaltung.png">
     <meta name="author" content="Olivier Luethy">
@@ -41,17 +37,17 @@ foreach ($mitarbeiter as $mitarbeiters){
     <?php
     if(isset($_SESSION['loggedin']) == true){
         echo "<div class='anchors'>
-        <a href='../hallo/welt'>Übersicht</a>
-        <a href='../hallo/auftraege'>Aufträge</a>
-        <a class='active' href='../hallo/mitarbeiter'>Mitarbeiter</a>
-        <a href='../hallo/logout'>Logout</a>
+        <a href='../welt'>Übersicht</a>
+        <a href='../auftraege'>Aufträge</a>
+        <a class='active' href='../mitarbeiter'>Mitarbeiter</a>
+        <a href='../logout'>Logout</a>
     </div>";
     }else{
         echo "<div class='anchors'>
-        <a class='active' href='../hallo/welt'>Übersicht</a>
-        <a href='../hallo/auftraege'>Aufträge</a>
-        <a class='active' href='../hallo/mitarbeiter'>Mitarbeiter</a>
-        <a href='../hallo/login'>Login</a>
+        <a class='active' href='../welt'>Übersicht</a>
+        <a href='../auftraege'>Aufträge</a>
+        <a class='active' href='../mitarbeiter'>Mitarbeiter</a>
+        <a href='../login'>Login</a>
     </div>";
     }?>
 </nav>
@@ -84,8 +80,8 @@ foreach ($mitarbeiter as $mitarbeiters){
             echo "<td>" . $mitarbeiters['adresse'] . "</td>";
             echo "<td>" . $mitarbeiters['email'] . "</td>";
             if (isset($_SESSION['istAdmin']) && isset($_SESSION['email']) && $_SESSION['istAdmin'] == '1' && $_SESSION['email'] != ""){
-                echo "<td><a href='updateMit?id=" . $mitarbeiters['id'] . "'><button class='edit'><i class='fas fa-edit'></i> Bearbeiten</button></a></td>";
-                echo "<td><a href='deleteMit?id=" . $mitarbeiters['id'] . "'><button class='delete'><i class='fas fa-trash'></i> Löschen</button></a></td>";
+                echo "<td><a href='updateMit?id=" . $mitarbeiters['id'] . "'><button class='edit'>Bearbeiten</button></a></td>";
+                echo "<td><a href='deleteMit?id=" . $mitarbeiters['id'] . "'><button class='delete'>Löschen</button></a></td>";
             }else{
                 echo "";
             }
@@ -100,7 +96,7 @@ foreach ($mitarbeiter as $mitarbeiters){
 
     <?php
     if (isset($_SESSION['istAdmin']) && isset($_SESSION['email']) && $_SESSION['istAdmin'] == '1' && $_SESSION['email'] != ""){
-        echo "<button class='hinzufuegen' onclick='addEmployee()'><i class='fas fa-plus'></i> Mitarbeiter hinzufügen</button>";
+        echo "<button class='hinzufuegen' onclick='addEmployee()'>Mitarbeiter hinzufügen</button>";
     }else{
         echo "";
     }?>

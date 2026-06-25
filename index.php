@@ -2,32 +2,35 @@
 require 'core/bootstrap.php';
 
 $routes = [
+	/* Startseite (leitet je nach Login weiter) */
+	'/' => 'WelcomeController@index',
+
 	/* Hauptseiten */
-	'/hallo/welt' => 'WelcomeController@index',
-	'/hallo/auftraege' => 'WelcomeController@auftraege',
-	'/hallo/mitarbeiter' => 'WelcomeController@mitarbeiter',
+	'/welt' => 'WelcomeController@index',
+	'/auftraege' => 'WelcomeController@auftraege',
+	'/mitarbeiter' => 'WelcomeController@mitarbeiter',
 
 	/* Informationen hinzufügen */
-	'/hallo/addEmploy' => 'WelcomeController@addEmploy',
-	'/hallo/addOrder' => 'WelcomeController@addOrder',
+	'/addEmploy' => 'WelcomeController@addEmploy',
+	'/addOrder' => 'WelcomeController@addOrder',
 
 	/* Informationen Löschen */
-	'/hallo/deleteMit' => 'WelcomeController@deleteMit',
-	'/hallo/deleteAuf' => 'WelcomeController@deleteAuf',
+	'/deleteMit' => 'WelcomeController@deleteMit',
+	'/deleteAuf' => 'WelcomeController@deleteAuf',
 
 	/* Informationen bearbeiten */
-	'/hallo/updateMit' => 'WelcomeController@updateMit',
-	'/hallo/updateAuf' => 'WelcomeController@updateAuf',
-	'/hallo/changeStatus' => 'WelcomeController@changeStatus',
+	'/updateMit' => 'WelcomeController@updateMit',
+	'/updateAuf' => 'WelcomeController@updateAuf',
+	'/changeStatus' => 'WelcomeController@changeStatus',
 
 	/* Login */
-	'/hallo/login' => 'WelcomeController@login',
-	'/hallo/config' => 'WelcomeController@config',
-	'/hallo/register' => 'WelcomeController@register',
-	'/hallo/logout' => 'WelcomeController@logout',
+	'/login' => 'WelcomeController@login',
+	'/config' => 'WelcomeController@config',
+	'/register' => 'WelcomeController@register',
+	'/logout' => 'WelcomeController@logout',
 
 	/* Error */
-	'/hallo/error' => 'WelcomeController@error',
+	'/error' => 'WelcomeController@error',
 ];
 
 $db = [

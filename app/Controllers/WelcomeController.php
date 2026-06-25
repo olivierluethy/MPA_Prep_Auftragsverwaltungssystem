@@ -82,7 +82,7 @@ INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId WHERE stat
 
             $auftraege->createEmploy($name, $adresse, $email);
 
-            header('Location: http://localhost/Mini-PA-Prep/hallo/mitarbeiter'); // Besser: header('Location: http://localhost/deinProjekt/task);
+            header('Location: ../mitarbeiter'); // Besser: header('Location: http://localhost/deinProjekt/task);
         }
 	}
 
@@ -113,7 +113,7 @@ INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId WHERE stat
 
             $auftraege->createOrder($titel, $beschreibung, $mitarbeiter, $erledigen_am, $file, $status);
 
-            header('Location: http://localhost/Mini-PA-Prep/hallo/auftraege'); // Besser: header('Location: http://localhost/deinProjekt/task);
+            header('Location: ../auftraege'); // Besser: header('Location: http://localhost/deinProjekt/task);
         }
 	}
 
@@ -140,7 +140,7 @@ INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId WHERE stat
 
         $auftraege->deleteAuftrag($id);
         
-        header('Location: http://localhost/Mini-PA-Prep/hallo/auftraege');
+        header('Location: ../auftraege');
 
         require 'app/Views/auftraege.view.php';
     }
@@ -161,7 +161,7 @@ INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId WHERE stat
 
             $auftraege->updateMitarbeiter($name, $adresse, $email, $id);
             
-            header('Location: http://localhost/Mini-PA-Prep/hallo/mitarbeiter');
+            header('Location: ../mitarbeiter');
         }else{
             $statement = $pdo->prepare('SELECT * FROM mitarbeiter WHERE id = :id');
             $statement->bindParam(':id', $id);
@@ -188,7 +188,7 @@ INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId WHERE stat
 
             $auftraege->updateAuftraege($titel, $beschreibung, $mitarbeiter, $erledigen_am, $id);
 
-            header('Location: http://localhost/Mini-PA-Prep/hallo/auftraege');
+            header('Location: ../auftraege');
         }else{
             $statement = $pdo->prepare('SELECT * FROM auftraege WHERE id = :id');
             $statement->bindParam(':id', $id);
@@ -217,7 +217,7 @@ INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId WHERE stat
 
         $auftraege->changeStatus($id);
 
-        header('Location: http://localhost/Mini-PA-Prep/hallo/auftraege');
+        header('Location: ../auftraege');
     }
 
     public function login(){

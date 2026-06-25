@@ -4,7 +4,7 @@ session_start();
  
 // Check if the user is logged in, if not then redirect him to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-    header("location: ../hallo/login");
+    header("location: ../login");
     exit;
 }
 
@@ -31,10 +31,6 @@ foreach ($auftraege2 as $auftraeges2){
     <meta charset="UTF-8">
     <title>Aufträge</title>
     <link rel="stylesheet" href="../public/css/app.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
     <link rel="shortcut icon" href="../images/verwaltung.png">
     <meta name="author" content="Olivier Luethy">
@@ -50,17 +46,17 @@ foreach ($auftraege2 as $auftraeges2){
     <?php
     if(isset($_SESSION['loggedin']) == true){
         echo "<div class='anchors'>
-        <a href='../hallo/welt'>Übersicht</a>
-        <a class='active' href='../hallo/auftraege'>Aufträge</a>
-        <a href='../hallo/mitarbeiter'>Mitarbeiter</a>
-        <a href='../hallo/logout'>Logout</a>
+        <a href='../welt'>Übersicht</a>
+        <a class='active' href='../auftraege'>Aufträge</a>
+        <a href='../mitarbeiter'>Mitarbeiter</a>
+        <a href='../logout'>Logout</a>
     </div>";
     }else{
         echo "<div class='anchors'>
-        <a href='../hallo/welt'>Übersicht</a>
-        <a class='active' href='../hallo/auftraege'>Aufträge</a>
-        <a href='../hallo/mitarbeiter'>Mitarbeiter</a>
-        <a href='../hallo/login'>Login</a>
+        <a href='../welt'>Übersicht</a>
+        <a class='active' href='../auftraege'>Aufträge</a>
+        <a href='../mitarbeiter'>Mitarbeiter</a>
+        <a href='../login'>Login</a>
     </div>";
     }?>
 </nav>
@@ -106,9 +102,9 @@ foreach ($auftraege2 as $auftraeges2){
                     echo "<td style='background-color: lightcoral;'>" . $auftraeges1['document'] . "</td>";
 
                     if (isset($_SESSION['istAdmin']) && isset($_SESSION['email']) && $_SESSION['istAdmin'] == '1' && $_SESSION['email'] != ""){
-                        echo "<td style='background-color: lightcoral;'><a href='updateAuf?id=" . $auftraeges1['id'] . "'><button class='edit'><i class='fas fa-edit'></i> Bearbeiten</button></a></td>";
-                        echo "<td style='background-color: lightcoral;'><a href='deleteAuf?id=" . $auftraeges1['id'] . "'><button class='delete'><i class='fas fa-trash'></i> Löschen</button></a></td>";
-                        echo "<td style='background-color: lightcoral;'><a href='changeStatus?id=" . $auftraeges1['id'] . "'><button class='finish'><i class='fas fa-frown-open'></i> Offen</button></a></td>";
+                        echo "<td style='background-color: lightcoral;'><a href='updateAuf?id=" . $auftraeges1['id'] . "'><button class='edit'>Bearbeiten</button></a></td>";
+                        echo "<td style='background-color: lightcoral;'><a href='deleteAuf?id=" . $auftraeges1['id'] . "'><button class='delete'>Löschen</button></a></td>";
+                        echo "<td style='background-color: lightcoral;'><a href='changeStatus?id=" . $auftraeges1['id'] . "'><button class='finish'>Offen</button></a></td>";
                     }else{
                         echo "";
                     }
@@ -121,9 +117,9 @@ foreach ($auftraege2 as $auftraeges2){
                     echo "<td style='background-color: lightgreen;'>" . $auftraeges1['document'] . "</a></td>";
 
                     if (isset($_SESSION['istAdmin']) && isset($_SESSION['email']) && $_SESSION['istAdmin'] == '1' && $_SESSION['email'] != ""){
-                        echo "<td style='background-color: lightgreen;'><a href='updateAuf?id=" . $auftraeges1['id'] . "'><button class='edit'><i class='fas fa-edit'></i> Bearbeiten</button></a></td>";
-                        echo "<td style='background-color: lightgreen;'><a href='deleteAuf?id=" . $auftraeges1['id'] . "'><button class='delete'><i class='fas fa-trash'></i> Löschen</button></a></td>";
-                        echo "<td style='background-color: lightgreen;'><a href='changeStatus?id=" . $auftraeges1['id'] . "'><button class='finish'><i class='fas fa-frown-open'></i> Offen</button></a></td>";
+                        echo "<td style='background-color: lightgreen;'><a href='updateAuf?id=" . $auftraeges1['id'] . "'><button class='edit'>Bearbeiten</button></a></td>";
+                        echo "<td style='background-color: lightgreen;'><a href='deleteAuf?id=" . $auftraeges1['id'] . "'><button class='delete'>Löschen</button></a></td>";
+                        echo "<td style='background-color: lightgreen;'><a href='changeStatus?id=" . $auftraeges1['id'] . "'><button class='finish'>Offen</button></a></td>";
                     }else{
                         echo "";
                     }
@@ -165,8 +161,8 @@ foreach ($auftraege2 as $auftraeges2){
                 echo "<td>" . $auftraeges2['document'] . "</td>";
 
                 if (isset($_SESSION['istAdmin']) && isset($_SESSION['email']) && $_SESSION['istAdmin'] == '1' && $_SESSION['email'] != ""){
-                    echo "<td><a href='deleteAuf?id=" . $auftraeges2['id'] . "'><button class='delete'><i class='fas fa-trash'></i> Löschen</button></a></td>";
-                    echo "<td><button class='finishReal'><i class='fas fa-check'></i> Erledigt</button></td>";
+                    echo "<td><a href='deleteAuf?id=" . $auftraeges2['id'] . "'><button class='delete'>Löschen</button></a></td>";
+                    echo "<td><button class='finishReal'>Erledigt</button></td>";
                 }else{
                     echo "";
                 }
@@ -179,7 +175,7 @@ foreach ($auftraege2 as $auftraeges2){
     }    
     
     if (isset($_SESSION['istAdmin']) && isset($_SESSION['email']) && $_SESSION['istAdmin'] == '1' && $_SESSION['email'] != ""){
-        echo "<button class='hinzufuegen' onclick='addOrder()'><i class='fas fa-plus'></i> Auftrag hinzufügen</button><br><br><br>";
+        echo "<button class='hinzufuegen' onclick='addOrder()'>Auftrag hinzufügen</button><br><br><br>";
     }else {
         echo "";
     }?>

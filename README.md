@@ -47,6 +47,21 @@ The project is actually very simple. In there you can see all employees and task
 <!-- INSTALLATION -->
 ## Installation Guide
 
+### 🐳 Quick start with Docker (recommended)
+
+The whole stack (PHP app + MySQL + phpMyAdmin + lots of mock data) runs with one command:
+
+```sh
+docker compose up -d --build
+```
+
+- App: <http://localhost:8100> — login `admin@minipa.test` / `admin`
+- Database UI (phpMyAdmin): <http://localhost:8101> — login `root` / `root`
+
+Full details, mock-data info and troubleshooting are in **[DOCKER.md](DOCKER.md)**.
+
+### Manual install (XAMPP)
+
 1. At first you need to install git on your local computer. For that you need to go to this [website](https://git-scm.com/downloads).
 2. Go to your windows explorer and search for a good place for storing this project
 3. Now right click on your folder or place and then click on "Git Bash Here"

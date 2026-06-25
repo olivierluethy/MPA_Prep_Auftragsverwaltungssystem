@@ -7,7 +7,7 @@ $_SESSION['email'] = "";
 
 // Check if the user is already logged in, if yes then redirect him to index page
 if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
-    header("location: ../hallo/welt");
+    header("location: ../welt");
     exit;
 }
 
@@ -58,8 +58,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     mysqli_stmt_bind_result($stmt, $id, $email, $name, $istAdmin, $hashed_password);
                     if (mysqli_stmt_fetch($stmt)) {
                         if (password_verify($password, $hashed_password)) {
-                            // Password is correct, so start a new session
-                            session_start();
+                            // Password is correct. The session is already active
+                            // (started at the top of this file), so we must NOT
+                            // call session_start() again here.
 
                             // Store data in session variables
                             $_SESSION["loggedin"] = true;
@@ -69,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $_SESSION["istAdmin"] = $istAdmin;
 
                             // Redirect user to index page
-                            header("location: ../hallo/welt");
+                            header("location: ../welt");
                         } else {
                             // Display an error message if password is not valid
                             $password_err = "The password you entered was not valid.";
@@ -99,10 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css">
-    <link rel="shortcut icon" href="images/gamepad.png">
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="../public/css/vendor.css">
     <link rel="shortcut icon" href="../images/verwaltung.png">
     <meta name="author" content="Olivier Luethy">
 </head>
@@ -171,7 +169,7 @@ body {
             <div class="form-group">
                 <input type="submit" class="btn btn-primary" value="Login">
             </div>
-            <p>Don't have an account? <a href="../hallo/register">Sign up now</a>.</p>
+            <p>Don't have an account? <a href="../register">Sign up now</a>.</p>
         </form>
     </div>
 </body>

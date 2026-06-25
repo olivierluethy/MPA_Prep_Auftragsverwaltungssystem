@@ -2,9 +2,9 @@
 console.info('JS geladen.');
 
 function addEmployee() {
-    window.location = "../hallo/addEmploy";
+    window.location = "../addEmploy";
 }
 
 function addOrder() {
-    window.location = "../hallo/addOrder";
+    window.location = "../addOrder";
 }

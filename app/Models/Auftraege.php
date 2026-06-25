@@ -63,10 +63,10 @@ class Auftraege
 
 		if ($success == true){
 			/* Dem Mitarbeiter wurde noch kein Auftrag zugeteilt */
-			header('Location: http://localhost/Mini-PA-Prep/hallo/mitarbeiter');
+			header('Location: ../mitarbeiter');
 		}else if($success == false){
 			/* Dem Mitarbeiter wurde ein Auftrag zugeteilt */
-			header('Location: http://localhost/Mini-PA-Prep/hallo/error');
+			header('Location: ../error');
 		}
 	}
 

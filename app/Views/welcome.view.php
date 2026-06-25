@@ -14,7 +14,7 @@ foreach ($mitarbeiter as $mitarbeiters){
 
 // Check if the user is logged in, if not then redirect him to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-    header("location: ../hallo/login");
+    header("location: ../login");
     exit;
 }
 ?>
@@ -25,9 +25,6 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     <meta charset="UTF-8">
     <title>Übersicht</title>
     <link rel="stylesheet" href="../public/css/app.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="../images/verwaltung.png">
     <meta name="author" content="Olivier Luethy">
 </head>
@@ -42,17 +39,17 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
     <?php
     if(isset($_SESSION['loggedin']) == true){
         echo "<div class='anchors'>
-        <a class='active' href='../hallo/welt'>Übersicht</a>
-        <a href='../hallo/auftraege'>Aufträge</a>
-        <a href='../hallo/mitarbeiter'>Mitarbeiter</a>
-        <a href='../hallo/logout'>Logout</a>
+        <a class='active' href='../welt'>Übersicht</a>
+        <a href='../auftraege'>Aufträge</a>
+        <a href='../mitarbeiter'>Mitarbeiter</a>
+        <a href='../logout'>Logout</a>
     </div>";
     }else{
         echo "<div class='anchors'>
-        <a class='active' href='../hallo/welt'>Übersicht</a>
-        <a href='../hallo/auftraege'>Aufträge</a>
-        <a href='../hallo/mitarbeiter'>Mitarbeiter</a>
-        <a href='../hallo/login'>Login</a>
+        <a class='active' href='../welt'>Übersicht</a>
+        <a href='../auftraege'>Aufträge</a>
+        <a href='../mitarbeiter'>Mitarbeiter</a>
+        <a href='../login'>Login</a>
     </div>";
     }?>
 </nav>
