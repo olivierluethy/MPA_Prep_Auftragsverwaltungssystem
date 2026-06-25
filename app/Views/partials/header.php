@@ -31,6 +31,8 @@ function navClass(string $name, string $active): string
     <meta name="author" content="Olivier Luethy">
     <!-- Tailwind + Alpine are vendored locally (public/js) so the app works fully offline -->
     <script src="../public/js/tailwind.js"></script>
+    <!-- Alpine x-cloak directive (hides un-initialised components; framework requirement) -->
+    <style>[x-cloak]{display:none!important}</style>
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen antialiased">
 
