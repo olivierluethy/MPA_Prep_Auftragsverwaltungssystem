@@ -2,241 +2,176 @@
 
 class WelcomeController
 {
+    /* True when the request comes from our fetch() calls (modal create/edit/delete).
+       In that case we answer with a bare status code instead of an HTML redirect,
+       so the front-end can refresh the table in place without a page navigation. */
+    private function isXhr(): bool
+    {
+        return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'fetch';
+    }
+
+    /* All tasks, enriched with the employee name + id and status, newest due first. */
+    private function allTasks(PDO $pdo): array
+    {
+        $sql = 'SELECT a.id, a.titel, a.beschreibung, a.fk_mitarbeiterId AS mitarbeiterId,
+                       m.name, a.erledigen_am, a.status
+                FROM auftraege a
+                INNER JOIN mitarbeiter m ON m.id = a.fk_mitarbeiterId
+                ORDER BY a.erledigen_am ASC';
+        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    private function allEmployees(PDO $pdo): array
+    {
+        return $pdo->query('SELECT id, name, adresse, email FROM mitarbeiter ORDER BY name ASC')
+                   ->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 	public function index()
 	{
-		/* Für Aufträge */
-		$pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $statement = $pdo->prepare('SELECT auftraege.id, auftraege.titel, auftraege.beschreibung, mitarbeiter.name, auftraege.erledigen_am FROM auftraege
-INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId');
-        $statement->execute();
-        $auftraege = $statement->fetchAll();
-
-		/* Für Mitarbeiter */
-		$pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $statement = $pdo->prepare('SELECT * FROM mitarbeiter');
-        $statement->execute();
-        $mitarbeiter = $statement->fetchAll();
-
+        $pdo = connectDatabase();
+        $auftraege   = $this->allTasks($pdo);
+        $mitarbeiter = $this->allEmployees($pdo);
 		require 'app/Views/welcome.view.php';
 	}
 
-	public function auftraege(){
-        /* Alle Aufträge */
-		$pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $statement = $pdo->prepare('SELECT auftraege.id, auftraege.titel, auftraege.beschreibung, mitarbeiter.name, auftraege.erledigen_am, auftraege.status, auftraege.document FROM auftraege
-INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId');
-        $statement->execute();
-        $auftraege = $statement->fetchAll();
-
-		/* Für offene Aufträge */
-		$pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $statement = $pdo->prepare('SELECT auftraege.id, auftraege.titel, auftraege.beschreibung, mitarbeiter.name, auftraege.erledigen_am, auftraege.status, auftraege.document FROM auftraege
-INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId WHERE status = 0');
-        $statement->execute();
-        $auftraege1 = $statement->fetchAll();
-
-        /* Für erledigte Aufträge */
-		$pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $statement = $pdo->prepare('SELECT auftraege.id, auftraege.titel, auftraege.beschreibung, mitarbeiter.name, auftraege.erledigen_am, auftraege.status, auftraege.document FROM auftraege
-INNER JOIN mitarbeiter ON mitarbeiter.id = auftraege.fk_mitarbeiterId WHERE status = 1');
-        $statement->execute();
-        $auftraege2 = $statement->fetchAll();
-
+	public function auftraege()
+    {
+        $pdo = connectDatabase();
+        $auftraege   = $this->allTasks($pdo);
+        $mitarbeiter = $this->allEmployees($pdo);
 		require 'app/Views/auftraege.view.php';
 	}
 
-	public function mitarbeiter(){
-		/* Mitarbeiter anzeigen */
-		$pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	public function mitarbeiter()
+    {
+        $pdo = connectDatabase();
+        $mitarbeiter = $this->allEmployees($pdo);
+		require 'app/Views/mitarbeiter.view.php';
+	}
+
+	public function addEmploy()
+    {
+        $auftraege = new Auftraege();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $auftraege->createEmploy($_POST['name'] ?? '', $_POST['adresse'] ?? '', $_POST['email'] ?? '');
+            if ($this->isXhr()) { http_response_code(204); return; }
+            header('Location: ../mitarbeiter');
+            return;
+        }
+
+        /* GET = standalone fallback form (the normal flow uses the modal) */
+        $pdo = connectDatabase();
+        $mitarbeiter = $this->allEmployees($pdo);
+		require 'app/Views/addEmploy.view.php';
+	}
+
+	public function addOrder()
+    {
+        $auftraege = new Auftraege();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $auftraege->createOrder(
+                $_POST['titel'] ?? '', $_POST['beschreibung'] ?? '', $_POST['mitarbeiter'] ?? '',
+                $_POST['erledigen_am'] ?? '', $_POST['file'] ?? '', 0
+            );
+            if ($this->isXhr()) { http_response_code(204); return; }
+            header('Location: ../auftraege');
+            return;
+        }
+
+        $pdo = connectDatabase();
+        $mitarbeiter = $this->allEmployees($pdo);
+		require 'app/Views/addOrder.view.php';
+	}
+
+    public function deleteMit()
+    {
+        $auftraege = new Auftraege();
+        $id = $_GET['id'] ?? 0;
+
+        try {
+            $auftraege->deleteMitarbeiter($id);
+        } catch (PDOException $e) {
+            /* Employee is still assigned to a task -> FK constraint */
+            if ($this->isXhr()) {
+                http_response_code(409);
+                header('Content-Type: application/json');
+                echo json_encode(['error' => 'Der Mitarbeiter kann nicht gelöscht werden, da er einer Aufgabe zugeteilt worden ist.']);
+                return;
+            }
+            header('Location: ../error');
+            return;
+        }
+
+        if ($this->isXhr()) { http_response_code(204); return; }
+        header('Location: ../mitarbeiter');
+    }
+
+    public function deleteAuf()
+    {
+        $auftraege = new Auftraege();
+        $auftraege->deleteAuftrag($_GET['id'] ?? 0);
+        if ($this->isXhr()) { http_response_code(204); return; }
+        header('Location: ../auftraege');
+    }
+
+    public function updateMit()
+    {
+        $auftraege = new Auftraege();
+        $id = $_GET['id'] ?? 0;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $auftraege->updateMitarbeiter($_POST['name'] ?? '', $_POST['adresse'] ?? '', $_POST['email'] ?? '', $id);
+            if ($this->isXhr()) { http_response_code(204); return; }
+            header('Location: ../mitarbeiter');
+            return;
+        }
+
+        $pdo = connectDatabase();
+        $statement = $pdo->prepare('SELECT * FROM mitarbeiter WHERE id = :id');
+        $statement->bindParam(':id', $id);
+        $statement->execute();
+        $auftraege = $statement->fetchAll();
+        require 'app/Views/editEmploy.view.php';
+    }
+
+    public function updateAuf()
+    {
+        $auftraege = new Auftraege();
+        $id = $_GET['id'] ?? 0;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $auftraege->updateAuftraege($_POST['titel'] ?? '', $_POST['beschreibung'] ?? '', $_POST['mitarbeiter'] ?? '', $_POST['erledigen_am'] ?? '', $id);
+            if ($this->isXhr()) { http_response_code(204); return; }
+            header('Location: ../auftraege');
+            return;
+        }
+
+        $pdo = connectDatabase();
+        $statement = $pdo->prepare('SELECT * FROM auftraege WHERE id = :id');
+        $statement->bindParam(':id', $id);
+        $statement->execute();
+        $auftraege = $statement->fetchAll();
 
         $statement = $pdo->prepare('SELECT * FROM mitarbeiter');
         $statement->execute();
         $mitarbeiter = $statement->fetchAll();
-
-		require 'app/Views/mitarbeiter.view.php';
-	}
-
-	public function addEmploy(){
-        $auftraege = new Auftraege();
-		require 'app/Views/addEmploy.view.php';
-
-		$title = '';
-        $pdo = connectDatabase();
-
-        /* Mitarbeiter hinzufügen */
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $name = $_POST['name'];
-            $adresse = $_POST['adresse'];
-			$email = $_POST['email'];
-
-            $auftraege->createEmploy($name, $adresse, $email);
-
-            header('Location: ../mitarbeiter'); // Besser: header('Location: http://localhost/deinProjekt/task);
-        }
-	}
-
-	public function addOrder(){
-        $auftraege = new Auftraege();
-
-        /* Mitarbeiter anzeigen */
-        $pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $statement = $pdo->prepare('SELECT id, name FROM mitarbeiter');
-        $statement->execute();
-        $mitarbeiter = $statement->fetchAll();
-
-		require 'app/Views/addOrder.view.php';
-
-		$title = '';
-        $pdo = connectDatabase();
-
-        /* Auftrag hinzufügen */
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $titel = $_POST['titel'];
-            $beschreibung = $_POST['beschreibung'];
-			$mitarbeiter = $_POST['mitarbeiter'];
-			$erledigen_am = $_POST['erledigen_am'];
-            $file = $_POST['file'];
-            $status = 0;
-
-            $auftraege->createOrder($titel, $beschreibung, $mitarbeiter, $erledigen_am, $file, $status);
-
-            header('Location: ../auftraege'); // Besser: header('Location: http://localhost/deinProjekt/task);
-        }
-	}
-
-    public function deleteMit(){
-        $auftraege = new Auftraege();
-        
-        $id = $_GET['id'];
-
-        $title = '';
-        $pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $auftraege->deleteMitarbeiter($id);
-    }
-
-    public function deleteAuf(){
-        $auftraege = new Auftraege();
-
-        $id = $_GET['id'];
-
-        $title = '';
-        $pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $auftraege->deleteAuftrag($id);
-        
-        header('Location: ../auftraege');
-
-        require 'app/Views/auftraege.view.php';
-    }
-
-    public function updateMit(){
-        $auftraege = new Auftraege();
-
-        $id = $_GET['id'];
-
-        $title = '';
-        $pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $name = $_POST['name'];
-            $adresse = $_POST['adresse'];
-            $email = $_POST['email'];
-
-            $auftraege->updateMitarbeiter($name, $adresse, $email, $id);
-            
-            header('Location: ../mitarbeiter');
-        }else{
-            $statement = $pdo->prepare('SELECT * FROM mitarbeiter WHERE id = :id');
-            $statement->bindParam(':id', $id);
-            $statement->execute();
-            $auftraege = $statement->fetchAll();
-        }
-        require 'app/Views/editEmploy.view.php';
-    }
-
-    public function updateAuf(){
-        $auftraege = new Auftraege();
-
-        $id = $_GET['id'];
-
-        $title = '';
-        $pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $titel = $_POST['titel'];
-            $beschreibung = $_POST['beschreibung'];
-            $mitarbeiter = $_POST['mitarbeiter'];
-            $erledigen_am = $_POST['erledigen_am'];
-
-            $auftraege->updateAuftraege($titel, $beschreibung, $mitarbeiter, $erledigen_am, $id);
-
-            header('Location: ../auftraege');
-        }else{
-            $statement = $pdo->prepare('SELECT * FROM auftraege WHERE id = :id');
-            $statement->bindParam(':id', $id);
-            $statement->execute();
-            $auftraege = $statement->fetchAll();
-
-            /* Mitarbeiter anzeigen */
-            $pdo = connectDatabase();
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            $statement = $pdo->prepare('SELECT * FROM mitarbeiter');
-            $statement->execute();
-            $mitarbeiter = $statement->fetchAll();
-        }
         require 'app/Views/editOrder.view.php';
     }
 
-    public function changeStatus(){
+    public function changeStatus()
+    {
         $auftraege = new Auftraege();
-
-        $id = $_GET['id'];
-
-        $title = '';
-        $pdo = connectDatabase();
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $auftraege->changeStatus($id);
-
+        $auftraege->changeStatus($_GET['id'] ?? 0);
+        if ($this->isXhr()) { http_response_code(204); return; }
         header('Location: ../auftraege');
     }
 
-    public function login(){
-        require 'app/Views/login.php';
-    }
-
-    public function logout(){
-        require 'app/Views/logout.php';
-    }
-
-    public function config(){
-        require 'app/Views/config.php';
-    }
-
-    public function register(){
-        require 'app/Views/register.view.php';
-    }
-
-    public function error(){
-        require 'app/Views/error.view.php';
-    }
+    public function login()    { require 'app/Views/login.php'; }
+    public function logout()   { require 'app/Views/logout.php'; }
+    public function config()   { require 'app/Views/config.php'; }
+    public function register() { require 'app/Views/register.view.php'; }
+    public function error()    { require 'app/Views/error.view.php'; }
 }

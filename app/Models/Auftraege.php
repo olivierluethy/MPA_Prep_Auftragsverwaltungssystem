@@ -57,17 +57,11 @@ class Auftraege
 	}
 
 	public function deleteMitarbeiter($id){
+		/* Throws a PDOException if the employee is still assigned to a task
+		   (foreign-key constraint); the controller turns that into a 409. */
 		$statement = $this->db->prepare("DELETE FROM `mitarbeiter` WHERE id = :id");
 		$statement->bindParam(':id', $id);
-		$success = $statement->execute();
-
-		if ($success == true){
-			/* Dem Mitarbeiter wurde noch kein Auftrag zugeteilt */
-			header('Location: ../mitarbeiter');
-		}else if($success == false){
-			/* Dem Mitarbeiter wurde ein Auftrag zugeteilt */
-			header('Location: ../error');
-		}
+		return $statement->execute();
 	}
 
 	public function deleteAuftrag($id){
