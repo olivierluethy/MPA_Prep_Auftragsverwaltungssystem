@@ -93,85 +93,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     mysqli_close($link);
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="../public/css/vendor.css">
     <link rel="shortcut icon" href="../images/verwaltung.png">
     <meta name="author" content="Olivier Luethy">
+    <script src="../public/js/tailwind.js"></script>
 </head>
-
-<body>
-
-<style>
-    @keyframes bgcolor {
-    0% {
-        background-color: #45a3e5
-    }
-
-    30% {
-        background-color: #66bf39
-    }
-
-    60% {
-        background-color: #eb670f
-    }
-
-    90% {
-        background-color: #f35
-    }
-
-    100% {
-        background-color: #864cbf
-    }
-}
-
-body {
-    -webkit-animation: bgcolor 20s infinite;
-    animation: bgcolor 10s infinite;
-    -webkit-animation-direction: alternate;
-    animation-direction: alternate;
-}
-
-.wrapper {
-    width: 350px;
-    padding: 20px;
-    border: 2px solid hsl(197, 100%, 23%);
-    border-radius: 10px;
-    box-shadow: 2px 3px 5px gray;
-    background-color: white;
-    position: block;
-    margin-top: 21rem;
-    margin-left: auto;
-    margin-right: auto;
-    font: 14px sans-serif;
-}
-</style>
-    <div class="wrapper">
-
-        <h2>Login</h2>
-        <p>Please fill in your credentials to login.</p>
-        <form action="login" method="post">
-            <div class="form-group <?php echo (!empty($email_err)) ? 'has-error' : ''; ?>">
-                <label>Email</label>
-                <input type="text" name="email" class="form-control" value="<?php echo $email; ?>">
-                <span class="help-block"><?php echo $email_err; ?></span>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex items-center justify-center p-4 antialiased">
+    <div class="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl p-6">
+        <div class="flex items-center gap-2 mb-6">
+            <img src="../images/verwaltung.png" alt="" class="h-8 w-8">
+            <span class="font-semibold tracking-tight">Aufträgeverwaltung</span>
+        </div>
+        <h2 class="text-lg font-semibold mb-1">Login</h2>
+        <p class="text-sm text-zinc-400 mb-5">Please fill in your credentials to login.</p>
+        <form action="login" method="post" class="space-y-4">
+            <div>
+                <label class="block text-xs text-zinc-400 mb-1">Email</label>
+                <input type="text" name="email" value="<?php echo e($email); ?>"
+                       class="w-full bg-zinc-800 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 <?php echo (!empty($email_err)) ? 'border-red-500' : 'border-zinc-700'; ?>">
+                <?php if (!empty($email_err)) : ?><p class="text-red-400 text-xs mt-1"><?php echo e($email_err); ?></p><?php endif; ?>
             </div>
-            <div class="form-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
-                <label>Password</label>
-                <input type="password" name="password" class="form-control">
-                <span class="help-block"><?php echo $password_err; ?></span>
+            <div>
+                <label class="block text-xs text-zinc-400 mb-1">Password</label>
+                <input type="password" name="password"
+                       class="w-full bg-zinc-800 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 <?php echo (!empty($password_err)) ? 'border-red-500' : 'border-zinc-700'; ?>">
+                <?php if (!empty($password_err)) : ?><p class="text-red-400 text-xs mt-1"><?php echo e($password_err); ?></p><?php endif; ?>
             </div>
-            <div class="form-group">
-                <input type="submit" class="btn btn-primary" value="Login">
-            </div>
-            <p>Don't have an account? <a href="../register">Sign up now</a>.</p>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors">Login</button>
+            <p class="text-sm text-zinc-400">Don't have an account? <a href="../register" class="text-indigo-400 hover:text-indigo-300">Sign up now</a>.</p>
         </form>
     </div>
 </body>
-
 </html>

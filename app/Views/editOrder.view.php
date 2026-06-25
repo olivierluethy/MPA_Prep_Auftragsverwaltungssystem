@@ -1,55 +1,36 @@
 <?php
-// Initialize the session
-session_start();
- 
-// Check if the user is logged in, if not then redirect him to login page
-if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-    header("location: ../login");
-    exit;
-}
+$pageTitle = 'Auftrag bearbeiten';
+$activeNav = 'auftraege';
+require __DIR__ . '/partials/header.php';
+$row = $auftraege[0] ?? ['id' => '', 'titel' => '', 'beschreibung' => '', 'fk_mitarbeiterId' => '', 'erledigen_am' => ''];
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Auftrag bearbeiten</title>
-    <link rel="shortcut icon" href="../images/verwaltung.png">
-    <meta name="author" content="Olivier Luethy">
-    <link rel="stylesheet" href="../public/css/editPage.css">
-</head>
-
-<body>
-    <h1>Auftragsdaten bearbeiten</h1>
-
-    <form action="updateAuf?id=<?= $auftraege[0][0] ?>" method="post">
-        <label for="titel">Titel:</label><br>
-        <input type="text" name="titel" id="titel" value="<?= $auftraege[0][1] ?>"><br><br>
-
-        <label for="beschreibung">Beschreibung:</label><br>
-        <textarea type="text" name="beschreibung" id="beschreibung" rows="4" cols="50"><?= $auftraege[0][2] ?></textarea><br><br>
-
-        <label for="mitarbeiter">Mitarbeiter:</label><br>
-
-        <select name="mitarbeiter" id="mitarbeiter" require>
-
-        <?php 
-        foreach ($mitarbeiter as $mitarbeiters){
-            if ($auftraege[0][3] == $mitarbeiters['id']){
-                echo "<option value='" . $mitarbeiters['id'] . "' selected>" . $mitarbeiters['id'] . ", " . $mitarbeiters['name'] . "</option>";
-            }else{
-                echo "<option value='" . $mitarbeiters['id'] . "'>" . $mitarbeiters['id'] . ", " . $mitarbeiters['name'] . "</option>";
-            }
-        }?>
-
-        </select><br><br>
-
-        <label for="email">Erledigen am:</label><br>
-        <input type="date" name="erledigen_am" value="<?= $auftraege[0][4] ?>"><br><br>
-        <button type="submit" name="form-submit">Auftrag bearbeiten</button>
+<main class="mx-auto max-w-xl px-4 py-6">
+    <h1 class="text-xl font-semibold mb-4">Auftragsdaten bearbeiten</h1>
+    <form action="updateAuf?id=<?= e((string) $row['id']) ?>" method="post" class="space-y-4 bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+        <div>
+            <label class="block text-xs text-zinc-400 mb-1">Titel</label>
+            <input type="text" name="titel" value="<?= e($row['titel']) ?>" class="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+            <label class="block text-xs text-zinc-400 mb-1">Beschreibung</label>
+            <textarea name="beschreibung" rows="4" class="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"><?= e($row['beschreibung']) ?></textarea>
+        </div>
+        <div>
+            <label class="block text-xs text-zinc-400 mb-1">Mitarbeiter</label>
+            <select name="mitarbeiter" required class="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <?php foreach ($mitarbeiter as $m) : ?>
+                    <option value="<?= e((string) $m['id']) ?>" <?= ($row['fk_mitarbeiterId'] == $m['id']) ? 'selected' : '' ?>><?= e($m['id'] . ', ' . $m['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs text-zinc-400 mb-1">Muss erledigt sein am</label>
+            <input type="date" name="erledigen_am" value="<?= e(substr((string) $row['erledigen_am'], 0, 10)) ?>" class="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 [color-scheme:dark]">
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-md">Speichern</button>
+            <a href="../auftraege" class="px-4 py-2 rounded-md text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-200">Abbrechen</a>
+        </div>
     </form>
-    <script src="../public/js/clientSideValidationAuftraege.js"></script>
-</body>
-
-</html>
+</main>
+<?php require __DIR__ . '/partials/footer.php'; ?>
