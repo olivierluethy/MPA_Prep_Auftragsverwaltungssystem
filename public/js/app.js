@@ -141,7 +141,7 @@ function auftraegePage() {
         data: { today: '', tasks: [], employees: [], isAdmin: false },
         tab: 'offen', subtab: 'alle',
         expanded: {},
-        modal: { open: false, mode: 'create', saving: false, error: '', form: {} },
+        modal: { open: false, mode: 'create', saving: false, error: '', form: {}, files: [], existing: [], taskRef: null },
         avYear: 2026, avMonth: 0,
         weekdays: WEEKDAYS_DE,
         BUCKET, deDate,
