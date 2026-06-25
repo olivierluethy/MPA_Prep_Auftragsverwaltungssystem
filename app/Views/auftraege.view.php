@@ -78,7 +78,14 @@ $pageData = [
                         </td>
                         <td class="px-3 py-2 text-zinc-300 whitespace-nowrap" x-text="t.name"></td>
                         <td class="px-3 py-2 text-zinc-300 whitespace-nowrap" x-text="deDate(t.erledigen_am)"></td>
-                        <td class="px-3 py-2 text-zinc-400" x-text="t.anhang || '—'"></td>
+                        <td class="px-3 py-2 text-zinc-400">
+                            <span x-show="!t.attachments || t.attachments.length===0">—</span>
+                            <div class="space-y-0.5">
+                                <template x-for="a in t.attachments" :key="a.id">
+                                    <a :href="'../downloadAttachment?id=' + a.id" class="block text-indigo-400 hover:text-indigo-300 text-xs truncate max-w-[12rem]" x-text="a.filename"></a>
+                                </template>
+                            </div>
+                        </td>
                         <td class="px-3 py-2" x-show="data.isAdmin">
                             <button @click="openEdit(t)" class="text-xs px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 whitespace-nowrap">Bearbeiten</button>
                         </td>
@@ -96,7 +103,7 @@ $pageData = [
     </div>
 
     <!-- ============================== CREATE / EDIT MODAL ============================== -->
-    <div x-show="modal.open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div x-show="modal.open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" @keydown.window="handleKey($event)">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeModal()"></div>
         <div class="relative bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
             <h2 class="text-lg font-semibold mb-4" x-text="modal.mode==='create' ? 'Auftrag hinzufügen' : 'Auftrag bearbeiten'"></h2>
@@ -120,7 +127,7 @@ $pageData = [
                                 class="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="">— Mitarbeiter wählen —</option>
                             <template x-for="m in data.employees" :key="m.id">
-                                <option :value="String(m.id)" x-text="m.id + ', ' + m.name"></option>
+                                <option :value="String(m.id)" x-text="m.name"></option>
                             </template>
                         </select>
                     </div>
@@ -130,9 +137,31 @@ $pageData = [
                                class="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 [color-scheme:dark]">
                     </div>
                     <div>
-                        <label class="block text-xs text-zinc-400 mb-1">Anhang (Dateiname, optional)</label>
-                        <input type="text" x-model="modal.form.file"
-                               class="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs text-zinc-400 mb-1">Anhänge</label>
+
+                        <!-- existing attachments (edit mode) -->
+                        <div x-show="modal.existing.length > 0" class="space-y-1 mb-2">
+                            <template x-for="a in modal.existing" :key="a.id">
+                                <div class="flex items-center justify-between gap-2 bg-zinc-800 border border-zinc-700 rounded-md px-2 py-1">
+                                    <a :href="'../downloadAttachment?id=' + a.id" class="text-indigo-400 hover:text-indigo-300 text-xs truncate" x-text="a.filename"></a>
+                                    <button type="button" @click="delAttachment(a)" class="text-xs px-2 py-0.5 rounded bg-red-600/90 hover:bg-red-600 text-white shrink-0">Löschen</button>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- new file picker -->
+                        <input type="file" multiple @change="addFiles($event)"
+                               class="block w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:bg-zinc-700 file:text-zinc-100 hover:file:bg-zinc-600 cursor-pointer">
+
+                        <!-- queued (not-yet-uploaded) files -->
+                        <div x-show="modal.files.length > 0" class="space-y-1 mt-2">
+                            <template x-for="(file, i) in modal.files" :key="i">
+                                <div class="flex items-center justify-between gap-2 bg-zinc-800 border border-zinc-700 rounded-md px-2 py-1">
+                                    <span class="text-xs text-zinc-300 truncate" x-text="file.name + ' (' + fmtSize(file.size) + ')'"></span>
+                                    <button type="button" @click="removeFile(i)" class="text-zinc-400 hover:text-red-400 shrink-0" title="Entfernen">✕</button>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
 
@@ -145,10 +174,20 @@ $pageData = [
                         Bitte zuerst einen Mitarbeiter wählen, um die Auslastung zu sehen.
                     </div>
                     <div x-show="modal.form.mitarbeiter">
-                        <div class="flex items-center justify-between mb-2">
-                            <button type="button" @click="avPrev()" class="h-7 w-7 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300">‹</button>
-                            <span class="text-sm font-medium" x-text="avLabel"></span>
-                            <button type="button" @click="avNext()" class="h-7 w-7 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300">›</button>
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <button type="button" @click="avPrev()" class="h-8 w-7 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 shrink-0">‹</button>
+                            <select x-model.number="avMonth" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <template x-for="(mname, mi) in months" :key="mi">
+                                    <option :value="mi" x-text="mname"></option>
+                                </template>
+                            </select>
+                            <select x-model.number="avYear" class="bg-zinc-800 border border-zinc-700 rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <template x-for="y in yearOptions" :key="y">
+                                    <option :value="y" x-text="y"></option>
+                                </template>
+                            </select>
+                            <button type="button" @click="avNext()" class="h-8 w-7 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 shrink-0">›</button>
+                            <button type="button" @click="avToday()" class="h-8 px-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs shrink-0">Heute</button>
                         </div>
                         <div class="grid grid-cols-7 gap-1">
                             <template x-for="(w,i) in weekdays" :key="i">
@@ -157,7 +196,7 @@ $pageData = [
                             <template x-for="(cell,i) in avGrid" :key="i">
                                 <button type="button"
                                         class="aspect-square rounded text-xs flex flex-col items-center justify-center relative"
-                                        :class="!cell.date ? 'invisible' : (isSelected(cell.date) ? 'bg-indigo-600 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300')"
+                                        :class="!cell.date ? 'invisible' : ((isSelected(cell.date) ? 'bg-indigo-600 text-white' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300') + (isAvToday(cell.date) && !isSelected(cell.date) ? ' ring-1 ring-inset ring-indigo-400' : ''))"
                                         @click="pickDate(cell.date)">
                                     <span x-text="cell.day"></span>
                                     <template x-if="dayMarker(cell.date)">

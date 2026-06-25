@@ -35,3 +35,16 @@ CREATE TABLE IF NOT EXISTS auftraege (
     document         LONGBLOB,
     FOREIGN KEY (fk_mitarbeiterId) REFERENCES mitarbeiter(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- One-to-many file attachments per task. File bytes are stored as a BLOB
+-- (no webroot exposure); deleting an Auftrag cascades to its attachments.
+CREATE TABLE IF NOT EXISTS attachment (
+    id           INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    auftrag_id   INT NOT NULL,
+    filename     VARCHAR(255) NOT NULL,
+    content_type VARCHAR(100) DEFAULT NULL,
+    size         INT NOT NULL DEFAULT 0,
+    content      LONGBLOB,
+    uploaded_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (auftrag_id) REFERENCES auftraege(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

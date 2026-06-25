@@ -14,11 +14,50 @@ class WelcomeController
     private function allTasks(PDO $pdo): array
     {
         $sql = 'SELECT a.id, a.titel, a.beschreibung, a.fk_mitarbeiterId AS mitarbeiterId,
-                       m.name, a.erledigen_am, a.status, a.document AS anhang
+                       m.name, a.erledigen_am, a.status
                 FROM auftraege a
                 INNER JOIN mitarbeiter m ON m.id = a.fk_mitarbeiterId
                 ORDER BY a.erledigen_am ASC';
-        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        $tasks = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+
+        // Attach the one-to-many file list to each task.
+        $atts = $pdo->query('SELECT id, auftrag_id, filename FROM attachment ORDER BY id ASC')->fetchAll(PDO::FETCH_ASSOC);
+        $byTask = [];
+        foreach ($atts as $a) {
+            $byTask[$a['auftrag_id']][] = ['id' => (int) $a['id'], 'filename' => $a['filename']];
+        }
+        foreach ($tasks as &$t) {
+            $t['attachments'] = $byTask[$t['id']] ?? [];
+        }
+        unset($t);
+        return $tasks;
+    }
+
+    /* Persists every uploaded file (input name "attachments[]") as an Attachment row. */
+    private function handleUploads(Auftraege $model, int $auftragId): void
+    {
+        if (empty($_FILES['attachments']) || !is_array($_FILES['attachments']['name'] ?? null)) {
+            return;
+        }
+        $maxBytes = 8 * 1024 * 1024; // 8 MB per file
+        $count = count($_FILES['attachments']['name']);
+        for ($i = 0; $i < $count; $i++) {
+            if (($_FILES['attachments']['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                continue;
+            }
+            $tmp = $_FILES['attachments']['tmp_name'][$i];
+            if (!is_uploaded_file($tmp)) {
+                continue;
+            }
+            $size = (int) ($_FILES['attachments']['size'][$i] ?? 0);
+            if ($size <= 0 || $size > $maxBytes) {
+                continue;
+            }
+            $filename = basename((string) $_FILES['attachments']['name'][$i]); // sanitise path
+            $content  = file_get_contents($tmp);
+            $ctype    = $_FILES['attachments']['type'][$i] ?? null;
+            $model->addAttachment($auftragId, $filename, $ctype, $size, $content);
+        }
     }
 
     private function allEmployees(PDO $pdo): array
@@ -72,10 +111,11 @@ class WelcomeController
         $auftraege = new Auftraege();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $auftraege->createOrder(
+            $newId = $auftraege->createOrder(
                 $_POST['titel'] ?? '', $_POST['beschreibung'] ?? '', $_POST['mitarbeiter'] ?? '',
-                $_POST['erledigen_am'] ?? '', $_POST['file'] ?? '', 0
+                $_POST['erledigen_am'] ?? '', '', 0
             );
+            $this->handleUploads($auftraege, (int) $newId);
             if ($this->isXhr()) { http_response_code(204); return; }
             header('Location: ../auftraege');
             return;
@@ -144,6 +184,7 @@ class WelcomeController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $auftraege->updateAuftraege($_POST['titel'] ?? '', $_POST['beschreibung'] ?? '', $_POST['mitarbeiter'] ?? '', $_POST['erledigen_am'] ?? '', $id);
+            $this->handleUploads($auftraege, (int) $id);
             if ($this->isXhr()) { http_response_code(204); return; }
             header('Location: ../auftraege');
             return;
@@ -167,6 +208,30 @@ class WelcomeController
         $auftraege->changeStatus($_GET['id'] ?? 0);
         if ($this->isXhr()) { http_response_code(204); return; }
         header('Location: ../auftraege');
+    }
+
+    public function deleteAttachment()
+    {
+        $auftraege = new Auftraege();
+        $auftraege->deleteAttachment($_GET['id'] ?? 0);
+        if ($this->isXhr()) { http_response_code(204); return; }
+        header('Location: ../auftraege');
+    }
+
+    public function downloadAttachment()
+    {
+        $auftraege = new Auftraege();
+        $att = $auftraege->getAttachment($_GET['id'] ?? 0);
+        if (!$att) {
+            http_response_code(404);
+            echo 'Anhang nicht gefunden';
+            return;
+        }
+        $content = (string) ($att['content'] ?? '');
+        header('Content-Type: ' . ($att['content_type'] ?: 'application/octet-stream'));
+        header('Content-Disposition: attachment; filename="' . str_replace('"', '', $att['filename']) . '"');
+        header('Content-Length: ' . strlen($content));
+        echo $content;
     }
 
     public function login()    { require 'app/Views/login.php'; }

@@ -74,6 +74,17 @@ function postForm(url, dataObj) {
 function getFetch(url) {
     return fetch(url, { headers: { 'X-Requested-With': 'fetch' } });
 }
+// multipart/form-data POST (file uploads) — let the browser set the boundary.
+function postMultipart(url, formData) {
+    return fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'fetch' }, body: formData });
+}
+// Human-readable file size.
+function fmtSize(bytes) {
+    bytes = Number(bytes) || 0;
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
 
 // Re-fetch the current page and swap #content in place (no navigation).
 async function refreshContent(rootEl) {
@@ -156,25 +167,49 @@ function auftraegePage() {
         setSub(s) { this.subtab = s; this._persist(); },
         toggleExpand(id) { this.expanded[id] = !this.expanded[id]; },
         empName(id) { const e = this.data.employees.find(x => String(x.id) === String(id)); return e ? e.name : ''; },
+        fmtSize,
         // ---- create / edit modal
         openCreate() {
             this.modal = { open: true, mode: 'create', saving: false, error: '',
-                form: { id: '', titel: '', beschreibung: '', mitarbeiter: '', erledigen_am: '', file: '' } };
+                form: { id: '', titel: '', beschreibung: '', mitarbeiter: '', erledigen_am: '' },
+                files: [], existing: [], taskRef: null };
             this.syncAv();
         },
         openEdit(t) {
             this.modal = { open: true, mode: 'edit', saving: false, error: '',
                 form: { id: t.id, titel: t.titel, beschreibung: t.beschreibung,
-                        mitarbeiter: String(t.mitarbeiterId), erledigen_am: (t.erledigen_am || '').slice(0, 10), file: '' } };
+                        mitarbeiter: String(t.mitarbeiterId), erledigen_am: (t.erledigen_am || '').slice(0, 10) },
+                files: [], existing: (t.attachments || []).slice(), taskRef: t };
             this.syncAv();
         },
         closeModal() { this.modal.open = false; },
+        // queued (not-yet-uploaded) files
+        addFiles(e) { this.modal.files.push(...Array.from(e.target.files || [])); e.target.value = ''; },
+        removeFile(i) { this.modal.files.splice(i, 1); },
+        // delete an already-stored attachment (immediate, with confirm)
+        async delAttachment(att) {
+            if (!confirm('Diesen Anhang löschen?')) return;
+            const res = await getFetch('../deleteAttachment?id=' + encodeURIComponent(att.id));
+            if (!res.ok) return;
+            let i = this.modal.existing.findIndex(a => a.id === att.id);
+            if (i > -1) this.modal.existing.splice(i, 1);
+            if (this.modal.taskRef && this.modal.taskRef.attachments) {
+                let j = this.modal.taskRef.attachments.findIndex(a => a.id === att.id);
+                if (j > -1) this.modal.taskRef.attachments.splice(j, 1);
+            }
+        },
         async save() {
             const f = this.modal.form;
             if (!f.titel || !f.mitarbeiter || !f.erledigen_am) { this.modal.error = 'Bitte Titel, Mitarbeiter und Datum ausfüllen.'; return; }
             this.modal.saving = true; this.modal.error = '';
+            const fd = new FormData();
+            fd.append('titel', f.titel);
+            fd.append('beschreibung', f.beschreibung || '');
+            fd.append('mitarbeiter', f.mitarbeiter);
+            fd.append('erledigen_am', f.erledigen_am);
+            this.modal.files.forEach(file => fd.append('attachments[]', file));
             const url = this.modal.mode === 'create' ? '../addOrder' : '../updateAuf?id=' + encodeURIComponent(f.id);
-            const res = await postForm(url, { titel: f.titel, beschreibung: f.beschreibung, mitarbeiter: f.mitarbeiter, erledigen_am: f.erledigen_am, file: f.file || '' });
+            const res = await postMultipart(url, fd);
             if (res.ok) { this.closeModal(); await refreshContent(this.$root); }
             else { this.modal.error = 'Speichern fehlgeschlagen.'; this.modal.saving = false; }
         },
@@ -188,12 +223,23 @@ function auftraegePage() {
             if (res.ok) await refreshContent(this.$root);
         },
         // ---- availability mini-calendar (selected employee, month of selected date)
+        months: MONTHS_DE,
         syncAv() {
             const base = this.modal.form.erledigen_am ? new Date(this.modal.form.erledigen_am) : new Date(this.data.today || Date.now());
             this.avYear = base.getFullYear(); this.avMonth = base.getMonth();
         },
         avPrev() { if (this.avMonth === 0) { this.avMonth = 11; this.avYear--; } else this.avMonth--; },
         avNext() { if (this.avMonth === 11) { this.avMonth = 0; this.avYear++; } else this.avMonth++; },
+        avToday() { const t = new Date(this.data.today || Date.now()); this.avYear = t.getFullYear(); this.avMonth = t.getMonth(); },
+        get yearOptions() { const base = new Date(this.data.today || Date.now()).getFullYear(); const a = []; for (let y = base - 3; y <= base + 5; y++) a.push(y); return a; },
+        isAvToday(iso) { return iso && iso === this.data.today; },
+        handleKey(e) {
+            if (!this.modal.open) return;
+            const tag = (e.target && e.target.tagName ? e.target.tagName : '').toLowerCase();
+            if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+            if (e.key === 'ArrowLeft') { this.avPrev(); }
+            else if (e.key === 'ArrowRight') { this.avNext(); }
+        },
         get avGrid() { return buildMonthGrid(this.avYear, this.avMonth); },
         get avLabel() { return MONTHS_DE[this.avMonth] + ' ' + this.avYear; },
         empTasksOn(iso) {

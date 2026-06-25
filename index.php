@@ -18,6 +18,10 @@ $routes = [
 	'/deleteMit' => 'WelcomeController@deleteMit',
 	'/deleteAuf' => 'WelcomeController@deleteAuf',
 
+	/* Anhänge (Datei-Upload) */
+	'/downloadAttachment' => 'WelcomeController@downloadAttachment',
+	'/deleteAttachment' => 'WelcomeController@deleteAttachment',
+
 	/* Informationen bearbeiten */
 	'/updateMit' => 'WelcomeController@updateMit',
 	'/updateAuf' => 'WelcomeController@updateAuf',

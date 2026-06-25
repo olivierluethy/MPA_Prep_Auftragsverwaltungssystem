@@ -44,16 +44,50 @@ class Auftraege
         // }
 
 		if($isValid){
-			$statement = $this->db->prepare("INSERT INTO `auftraege` (titel, beschreibung, fk_mitarbeiterId, erledigen_am, status, document) 
-			VALUES (:titel, :beschreibung, :fk_mitarbeiterId, :erledigen_am, :status, :document)");
+			$statement = $this->db->prepare("INSERT INTO `auftraege` (titel, beschreibung, fk_mitarbeiterId, erledigen_am, status)
+			VALUES (:titel, :beschreibung, :fk_mitarbeiterId, :erledigen_am, :status)");
 			$statement->bindParam(':titel', $titel, PDO::PARAM_STR);
 			$statement->bindParam(':beschreibung', $beschreibung, PDO::PARAM_STR);
 			$statement->bindParam(':fk_mitarbeiterId', $mitarbeiter, PDO::PARAM_STR);
 			$statement->bindParam(':erledigen_am', $erledigen_am, PDO::PARAM_STR);
 			$statement->bindParam(':status', $status, PDO::PARAM_STR);
-			$statement->bindParam(':document', $file, PDO::PARAM_STR);
 			$statement->execute();
+			return (int) $this->db->lastInsertId();
 		}
+		return 0;
+	}
+
+	/* ---- File attachments (one-to-many) ---- */
+
+	public function addAttachment($auftragId, $filename, $contentType, $size, $content){
+		$statement = $this->db->prepare("INSERT INTO `attachment` (auftrag_id, filename, content_type, size, content)
+			VALUES (:auftrag_id, :filename, :content_type, :size, :content)");
+		$statement->bindValue(':auftrag_id', (int) $auftragId, PDO::PARAM_INT);
+		$statement->bindValue(':filename', $filename, PDO::PARAM_STR);
+		$statement->bindValue(':content_type', $contentType, PDO::PARAM_STR);
+		$statement->bindValue(':size', (int) $size, PDO::PARAM_INT);
+		$statement->bindValue(':content', $content, PDO::PARAM_LOB);
+		$statement->execute();
+	}
+
+	public function getAttachments($auftragId){
+		$statement = $this->db->prepare("SELECT id, filename, size FROM `attachment` WHERE auftrag_id = :id ORDER BY id ASC");
+		$statement->bindValue(':id', (int) $auftragId, PDO::PARAM_INT);
+		$statement->execute();
+		return $statement->fetchAll(PDO::FETCH_ASSOC);
+	}
+
+	public function getAttachment($id){
+		$statement = $this->db->prepare("SELECT filename, content_type, content FROM `attachment` WHERE id = :id");
+		$statement->bindValue(':id', (int) $id, PDO::PARAM_INT);
+		$statement->execute();
+		return $statement->fetch(PDO::FETCH_ASSOC);
+	}
+
+	public function deleteAttachment($id){
+		$statement = $this->db->prepare("DELETE FROM `attachment` WHERE id = :id");
+		$statement->bindValue(':id', (int) $id, PDO::PARAM_INT);
+		return $statement->execute();
 	}
 
 	public function deleteMitarbeiter($id){

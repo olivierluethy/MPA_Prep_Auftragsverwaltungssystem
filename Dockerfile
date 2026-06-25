@@ -10,6 +10,9 @@ RUN docker-php-ext-install pdo_mysql mysqli \
 # Apache virtual host (serves the project under /Mini-PA-Prep and allows .htaccess)
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 
+# Raise PHP upload limits for multi-file attachment uploads
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
 # Bake the source into the image so it also runs without a bind mount.
 # (docker-compose additionally mounts the source for live editing.)
 COPY . /var/www/html/Mini-PA-Prep
