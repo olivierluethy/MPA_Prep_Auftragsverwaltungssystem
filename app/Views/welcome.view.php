@@ -29,13 +29,13 @@ $pageData = [
     <!-- ===== Aufträge ===== -->
     <div x-show="tab==='auftraege'" class="rounded-lg border border-zinc-800 overflow-hidden">
         <table class="w-full text-sm">
-            <thead class="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wide">
-                <tr class="sticky top-14">
-                    <th class="text-left font-medium px-3 py-2">Status</th>
-                    <th class="text-left font-medium px-3 py-2">Titel</th>
-                    <th class="text-left font-medium px-3 py-2">Beschreibung</th>
-                    <th class="text-left font-medium px-3 py-2">Betroffene Person</th>
-                    <th class="text-left font-medium px-3 py-2">Muss erledigt sein am</th>
+            <thead>
+                <tr>
+                    <th class="bg-zinc-800 border-b border-zinc-700 text-left text-zinc-300 font-semibold text-xs uppercase tracking-wide px-4 py-3">Status</th>
+                    <th class="bg-zinc-800 border-b border-zinc-700 text-left text-zinc-300 font-semibold text-xs uppercase tracking-wide px-4 py-3">Titel</th>
+                    <th class="bg-zinc-800 border-b border-zinc-700 text-left text-zinc-300 font-semibold text-xs uppercase tracking-wide px-4 py-3">Beschreibung</th>
+                    <th class="bg-zinc-800 border-b border-zinc-700 text-left text-zinc-300 font-semibold text-xs uppercase tracking-wide px-4 py-3">Betroffene Person</th>
+                    <th class="bg-zinc-800 border-b border-zinc-700 text-left text-zinc-300 font-semibold text-xs uppercase tracking-wide px-4 py-3">Muss erledigt sein am</th>
                 </tr>
             </thead>
             <tbody>
@@ -58,11 +58,11 @@ $pageData = [
     <!-- ===== Mitarbeiter ===== -->
     <div x-show="tab==='mitarbeiter'" class="rounded-lg border border-zinc-800 overflow-hidden">
         <table class="w-full text-sm">
-            <thead class="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wide">
-                <tr class="sticky top-14">
-                    <th class="text-left font-medium px-3 py-2">Name</th>
-                    <th class="text-left font-medium px-3 py-2">Adresse</th>
-                    <th class="text-left font-medium px-3 py-2">Email</th>
+            <thead>
+                <tr>
+                    <th class="bg-zinc-800 border-b border-zinc-700 text-left text-zinc-300 font-semibold text-xs uppercase tracking-wide px-4 py-3">Name</th>
+                    <th class="bg-zinc-800 border-b border-zinc-700 text-left text-zinc-300 font-semibold text-xs uppercase tracking-wide px-4 py-3">Adresse</th>
+                    <th class="bg-zinc-800 border-b border-zinc-700 text-left text-zinc-300 font-semibold text-xs uppercase tracking-wide px-4 py-3">Email</th>
                 </tr>
             </thead>
             <tbody>
