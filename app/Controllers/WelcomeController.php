@@ -14,7 +14,7 @@ class WelcomeController
     private function allTasks(PDO $pdo): array
     {
         $sql = 'SELECT a.id, a.titel, a.beschreibung, a.fk_mitarbeiterId AS mitarbeiterId,
-                       m.name, a.erledigen_am, a.status
+                       m.name, a.erledigen_am, a.status, a.document AS anhang
                 FROM auftraege a
                 INNER JOIN mitarbeiter m ON m.id = a.fk_mitarbeiterId
                 ORDER BY a.erledigen_am ASC';
