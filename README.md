@@ -1,7 +1,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="http://192.168.100.57:3000/Olivier_Luethy/Mini-PA-Prep.git">
+  <a href="https://github.com/olivierluethy/MPA_Prep_Auftragsverwaltungssystem">
     <img src="images/verwaltung.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -10,14 +10,14 @@
   <p align="center">
     Here I'll explain about what this project is and how you set it up!
     <br />
-    <a href="http://192.168.100.57:3000/Olivier_Luethy/Mini-PA-Prep.git/README.md"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/olivierluethy/MPA_Prep_Auftragsverwaltungssystem/blob/master/README.md"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="http://192.168.100.57:3000/Olivier_Luethy/Mini-PA-Prep.git">View Demo</a>
+    <a href="https://github.com/olivierluethy/MPA_Prep_Auftragsverwaltungssystem">View Demo</a>
     ·
-    <a href="http://192.168.100.57:3000/Olivier_Luethy/Mini-PA-Prep.git/issues">Report Bug</a>
+    <a href="https://github.com/olivierluethy/MPA_Prep_Auftragsverwaltungssystem/issues">Report Bug</a>
     ·
-    <a href="http://192.168.100.57:3000/Olivier_Luethy/Mini-PA-Prep.git/issues">Request Feature</a>
+    <a href="https://github.com/olivierluethy/MPA_Prep_Auftragsverwaltungssystem/issues">Request Feature</a>
   </p>
 </p>
 
@@ -67,7 +67,7 @@ Full details, mock-data info and troubleshooting are in **[DOCKER.md](DOCKER.md)
 3. Now right click on your folder or place and then click on "Git Bash Here"
 4. Finally you will see a new program. If you do you only have to enter this
    ```sh
-   git clone http://192.168.100.57:3000/Olivier_Luethy/Mini-PA-Prep.git
+   git clone https://github.com/olivierluethy/MPA_Prep_Auftragsverwaltungssystem.git
    ```
 
 <!-- Problems during project -->
